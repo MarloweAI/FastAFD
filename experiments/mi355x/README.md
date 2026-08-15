@@ -4,6 +4,10 @@ This experiment compares FastAFD with the original InferenceX/vLLM Pareto on
 the same physical 8×MI355X node and the same random 8192-input/1024-output
 workload. It is a CDNA4 experiment, not an MI300X behavior-preservation port.
 
+The separate minimal 1K-input/8K-output screening run is summarized in
+[`results/minimal-1k8k-screen-mi355x.md`](results/minimal-1k8k-screen-mi355x.md).
+It uses deliberately small samples and is not included in this Pareto contract.
+
 ## Experiment contract
 
 - A split `A:B` means `A` TP1 attention workers and `B` TP1 FFN workers.
