@@ -38,5 +38,6 @@ the benchmark contract or pinned dependencies change.
 
 Use `bootstrap_rocm.sh`, `scripts/check_rocm_runtime.py`, `run_col_rocm.sh`, and
 `run_afd_rocm.sh` for `gfx942`. Keep the validated MI300X environment and Slurm
-workflow in `tools/slurm/`. Never publish an MI300X correctness or performance
-claim based only on an MI355X run.
+workflow in `tools/slurm/` and its experiment recipes in `experiments/mi300x/`.
+Never publish an MI300X correctness or performance claim based only on an
+MI355X run.

@@ -9,7 +9,7 @@ ones.
 Reports TTFT (time to first token), ITL/TPOT (inter-token latency during decode) and
 aggregate output throughput, per that document's definitions.
 
-  python dev_log/probes/serve_bench.py --port 19600 --isl 8192 --osl 256 \
+  python experiments/mi300x/serve_bench.py --port 19600 --isl 8192 --osl 256 \
       --concurrency 16 --config afd_1a3f --out result.json
 """
 from __future__ import annotations

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Prefill TTFT with UNIQUE prompts, so the radix cache cannot inflate the result.
+"""MI300X prefill TTFT with unique prompts, avoiding radix-cache inflation.
 
 The grid in 16_projection_vs_silicon.md measured TTFT non-monotonic in ISL (32,768 faster
 than 2,048). `serve_bench.build_prompt` emits `item0 item1 ...` filler, so each longer ISL is

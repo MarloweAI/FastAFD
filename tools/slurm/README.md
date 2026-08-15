@@ -10,18 +10,18 @@ The scripts print the underlying Slurm commands. There is no SSH daemon inside
 the container and no hidden Git synchronization. You SSH to the head node, then
 use `srun --pty` (through `shell.sh`) to obtain a shell in the GPU container.
 
-`experiments/profile_report.py` is a tracked analysis helper available in every
+`experiments/mi300x/profile_report.py` is a tracked analysis helper available in every
 FastAFD checkout. It can show aggregate kernel costs, the
 timestamp-ordered execution stream, one or several inferred TP ranks, and the
 repeated sliding-window/full-attention layer pattern:
 
 ```bash
-experiments/profile_report.py results/profiles/RUN
-experiments/profile_report.py results/profiles/RUN \
+experiments/mi300x/profile_report.py results/profiles/RUN
+experiments/mi300x/profile_report.py results/profiles/RUN \
   --view timeline --rank 0,1 --limit 100
-experiments/profile_report.py results/profiles/RUN \
+experiments/mi300x/profile_report.py results/profiles/RUN \
   --view pattern --rank all
-experiments/profile_report.py results/profiles/RUN \
+experiments/mi300x/profile_report.py results/profiles/RUN \
   --view pattern --rank 0 --step 0
 ```
 
@@ -228,7 +228,7 @@ server. It does not start a server. It uses the tokenizer at the exported
 shell:
 
 ```bash
-"$ENV_PREFIX/bin/python" experiments/serve_bench.py \
+"$ENV_PREFIX/bin/python" experiments/mi300x/serve_bench.py \
   --port 19295 \
   --isl 8192 \
   --osl 32 \
