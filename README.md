@@ -193,7 +193,7 @@ Single serving point (TTFT, ITL/TPOT, and output throughput):
 
 ```bash
 mkdir -p results
-"$ENV_PREFIX/bin/python" experiments/serve_bench.py \
+"$ENV_PREFIX/bin/python" experiments/mi300x/serve_bench.py \
   --port 19295 --isl 8192 --osl 32 --concurrency 32 \
   --config colocated_tp4_packed --out results/tp4_isl8192_c32.json
 ```
@@ -203,7 +203,7 @@ run one measured benchmark, and stop the server that the script started:
 
 ```bash
 TP=4 GRAPH_MAX_BS=32 OSL=256 CONCURRENCY=32 \
-./experiments/profile_steady_rocm.sh results/profiles/tp4-c32
+./experiments/mi300x/profile_steady_rocm.sh results/profiles/tp4-c32
 ```
 
 The script refuses to run if any MiniSGL server is already visible in the
@@ -232,10 +232,10 @@ directory:
 ```bash
 run=results/profiles/tp4-c32
 
-./experiments/profile_report.py "$run" --view summary --rank 0,1
-./experiments/profile_report.py "$run" --view timeline --rank 0,1 --limit 100
-./experiments/profile_report.py "$run" --view pattern --rank all
-./experiments/profile_report.py "$run" --view pattern --rank 0 --step 0
+./experiments/mi300x/profile_report.py "$run" --view summary --rank 0,1
+./experiments/mi300x/profile_report.py "$run" --view timeline --rank 0,1 --limit 100
+./experiments/mi300x/profile_report.py "$run" --view pattern --rank all
+./experiments/mi300x/profile_report.py "$run" --view pattern --rank 0 --step 0
 ```
 
 `summary` aggregates names and durations and can sort by `total`, `average`,
@@ -257,13 +257,13 @@ Decode grid used by the performance investigation:
 ```bash
 PORT=19295 CONFIG=colocated_tp4_packed \
 ISLS="2048 8192 32768" CONCURRENCIES="1 8 32 64" OSL=32 \
-./experiments/run_decode_grid.sh
+./experiments/mi300x/run_decode_grid.sh
 ```
 
 Unique-prompt prefill TTFT at 2K, 8K, and 32K:
 
 ```bash
-PORT=19295 "$ENV_PREFIX/bin/python" experiments/prefill_ttft.py
+PORT=19295 "$ENV_PREFIX/bin/python" experiments/mi300x/prefill_ttft.py
 ```
 
 Greedy token-ID alignment against Hugging Face is much more memory-intensive:
