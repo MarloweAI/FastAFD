@@ -1,28 +1,34 @@
-# FastAFD for AMD MI355X
+# FastAFD on AMD Instinct
 
-MI355X-native (`gfx950`) FastAFD for GPT-OSS-120B. This branch uses TP1 role
-workers, arbitrary full-node attention:FFN splits, uneven full-world expert
-parallelism, and AITER's packed-MXFP4 CK kernels. It does not preserve MI300X
-behavior when CDNA4 offers a better implementation.
+This repository contains the AMD ports of
+[`hao-ai-lab/FastAFD`](https://github.com/hao-ai-lab/FastAFD) in one shared
+codebase. Architecture-specific launchers select the native kernels, runtime
+topology, dependency pins, and benchmark contract for each GPU generation.
 
-This repository is the architecture-specific MI355X port of
-[`hao-ai-lab/FastAFD`](https://github.com/hao-ai-lab/FastAFD). The independent
-[`MarloweAI/FastAFD-MI300X`](https://github.com/MarloweAI/FastAFD-MI300X)
-repository remains the `gfx942` port and implementation reference; MI355X
-changes are not merged into its supported runtime.
+| Architecture | Runtime path | Reproducibility entrypoint |
+|---|---|---|
+| MI300X (`gfx942`, CDNA3) | ROCm/Triton colocated and RCCL AFD via [`run_col_rocm.sh`](run_col_rocm.sh) and [`run_afd_rocm.sh`](run_afd_rocm.sh) | [MI300X guide](#mi300x-gfx942) |
+| MI355X (`gfx950`, CDNA4) | TP1 role workers, arbitrary attention:FFN splits, full-world EP, and packed-MXFP4 AITER CK kernels via [`run_afd_mi355x.sh`](run_afd_mi355x.sh) | [`experiments/mi355x/README.md`](experiments/mi355x/README.md) |
+
+The shared server and scheduling code lives under `python/minisgl`. Native
+backends remain architecture-aware: MI355X can use CDNA4 AITER MXFP4 without
+requiring MI300X to emulate that datapath, while MI300X retains its validated
+`gfx942` ROCm paths. Results must always identify the architecture, dependency
+set, source commit, and launcher used.
+
+## MI355X (`gfx950`)
 
 The reproducible Colovore workflow, correctness gates, same-node vLLM baseline,
-42-point AFD sweep, and combined Pareto plot are documented in
-[`experiments/mi355x/README.md`](experiments/mi355x/README.md). The direct launcher
-is [`run_afd_mi355x.sh`](run_afd_mi355x.sh).
+AFD sweep, and combined Pareto plot are documented in
+[`experiments/mi355x/README.md`](experiments/mi355x/README.md).
 
-The remaining MI300X instructions below are retained only as implementation
-history while the standalone MI355X packaging is completed. Do not use their
-gfx942 dependency pins for MI355X benchmark claims.
+## MI300X (`gfx942`)
 
-## MI300X reference material (historical)
+The guide below records the last validated MI300X environment and entrypoints.
+Shared-runtime changes still require a fresh `gfx942` check before publishing
+new MI300X correctness or performance claims.
 
-## Validated configuration
+### Validated configuration
 
 - Linux x86-64, AMD MI300X (`gfx942`), 192 GiB HBM per GPU.
 - System ROCm `7.2.4` in `/opt/rocm`.
@@ -34,7 +40,7 @@ gfx942 dependency pins for MI355X benchmark claims.
 Host tools: Miniforge/Conda, `git`, `curl`, `bc`, `iproute2`, `rocminfo`, and
 `rocm-smi`. The user must have permission to access `/dev/kfd` and `/dev/dri`.
 
-## Slurm container workflow
+### Slurm container workflow
 
 The tracked helpers in [`tools/slurm/`](tools/slurm/README.md) provide the
 recommended workflow on the Marlowe MI300X cluster. Keep the management clone
@@ -43,10 +49,10 @@ scratch:
 
 | Content | Location |
 |---|---|
-| Management Git checkout | `/nfs/home/$USER/FastAFD-MI300X` |
+| Management Git checkout | `/nfs/home/$USER/FastAFD` |
 | Immutable shared image | `/nfs/containers/sqsh/fastafd-rocm724-v1.sqsh` |
 | Staged runnable image | `/scratch/images/fastafd-rocm724-v1.sqsh` |
-| Active checkout | `/scratch/$USER/FastAFD-MI300X` |
+| Active checkout | `/scratch/$USER/FastAFD` |
 | Model | `/scratch/models/gpt-oss-120b` |
 | JIT cache and results | active checkout `cache/` and `results/` |
 
@@ -55,9 +61,9 @@ image, source, and approximately 61 GiB runtime model on one selected node. Run
 it once for each node whose local scratch you intend to use:
 
 ```bash
-git clone https://github.com/MarloweAI/FastAFD-MI300X.git \
-  /nfs/home/$USER/FastAFD-MI300X
-cd /nfs/home/$USER/FastAFD-MI300X
+git clone https://github.com/MarloweAI/FastAFD.git \
+  /nfs/home/$USER/FastAFD
+cd /nfs/home/$USER/FastAFD
 FASTAFD_NODE=mi300x-01 ./tools/slurm/setup.sh
 FASTAFD_NODE=mi300x-02 ./tools/slurm/setup.sh
 ```
@@ -66,7 +72,7 @@ The frequent development path reserves GPUs and opens the already-staged
 container. Slurm chooses a node unless `FASTAFD_NODE` is set:
 
 ```bash
-cd /nfs/home/$USER/FastAFD-MI300X
+cd /nfs/home/$USER/FastAFD
 FASTAFD_NODE=mi300x-01 ./tools/slurm/shell.sh 4
 ```
 
@@ -110,11 +116,11 @@ checkout. `/scratch` is node-local and not backed up, so commit source and copy
 selected results to NFS. Use a new `FASTAFD_IMAGE_NAME` when rebuilding an
 immutable image; see the detailed tools README for image-version examples.
 
-## 1. Clone and create the environment
+### 1. Clone and create the environment
 
 ```bash
-git clone https://github.com/MarloweAI/FastAFD-MI300X.git
-cd FastAFD-MI300X
+git clone https://github.com/MarloweAI/FastAFD.git
+cd FastAFD
 ./bootstrap_rocm.sh
 export ENV_PREFIX="$PWD/.conda-env"
 ```
@@ -128,7 +134,7 @@ different environment location.
 the port. `environment.rocm7.pinned.yml` pins the direct packages to the exact
 versions observed on the source MI300X machine.
 
-## 2. Download gpt-oss-120b weights
+### 2. Download gpt-oss-120b weights
 
 The model is approximately 61 GiB. Keep at least 70 GiB free for the snapshot
 and additional space for the environment and JIT cache.
@@ -149,7 +155,7 @@ If Hugging Face requests authentication:
 The launch scripts have development-machine defaults, so always export both
 `ENV_PREFIX` and `MODEL` on another machine.
 
-## 3. Run the recommended colocated server
+### 3. Run the recommended colocated server
 
 Packed MXFP4 is the mature gpt-oss path. It keeps the expert weights packed and
 has been correctness/performance validated at TP2 and TP4.
@@ -174,11 +180,11 @@ been benchmarked. For high concurrency, reduce KV allocation with, for example,
 Smoke-test from another shell:
 
 ```bash
-cd FastAFD-MI300X
+cd FastAFD
 ./ask_rocm.sh "What is the capital of France?"
 ```
 
-## 4. Reproduce the measured experiments
+### 4. Reproduce the measured experiments
 
 All experiment commands assume the colocated server is already running and
 `ENV_PREFIX` and `MODEL` are exported.
@@ -278,7 +284,7 @@ PORT=19295 MODEL="$MODEL" "$ENV_PREFIX/bin/python" \
   --hf-in experiments/refs/gptoss120b_hf_ref_n32_t32.json
 ```
 
-## 5. Experimental AMD AFD
+### 5. Experimental MI300X AFD
 
 The AMD AFD implementation replaces NVIDIA-only DeepEP/DeepGEMM with RCCL
 transport and Triton experts. It is functionally validated, but it runs eager,
@@ -298,7 +304,7 @@ MEM_RATIO=0.5 NUM_MB=1 GRAPH_MAX_BS=0 PORT=19297 \
 For a 1-attention + 3-FFN layout, use `ATTN_TP=1 MLP_TP=3 MLP_EP=3`.
 `MLP_EP=1` in that layout silently produces incorrect results.
 
-## Important ROCm rules
+## Shared ROCm rules
 
 - Do not install NVIDIA NCCL packages, CUDA `triton`, FlashInfer, DeepEP, or
   DeepGEMM in this environment.

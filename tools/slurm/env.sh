@@ -17,7 +17,7 @@ fi
 unset ROCR_VISIBLE_DEVICES
 
 FASTAFD_USER="${FASTAFD_USER:-${USER:-$(id -un)}}"
-FASTAFD_CODE="${FASTAFD_CODE:-/scratch/$FASTAFD_USER/FastAFD-MI300X}"
+FASTAFD_CODE="${FASTAFD_CODE:-/scratch/$FASTAFD_USER/FastAFD}"
 if [[ ! -d "$FASTAFD_CODE" ]]; then
   echo "FastAFD checkout is missing: $FASTAFD_CODE" >&2
   return 1 2>/dev/null || exit 1

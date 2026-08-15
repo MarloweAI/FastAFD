@@ -3,7 +3,7 @@
 set -euo pipefail
 
 image=${INFERENCEX_IMAGE:-/workspace/images/vllm_vllm-openai-rocm_v0.22.0_c3f18c9b.sqsh}
-overlay=${FASTAFD_PYTHON_OVERLAY:-/workspace/$USER/FastAFD-MI355X-python-v1}
+overlay=${FASTAFD_PYTHON_OVERLAY:-/workspace/$USER/FastAFD-mi355x-python-v1}
 partition=${SLURM_PARTITION:-mi355x}
 node=${SLURM_NODELIST:-$(hostname -s)}
 mkdir -p "$overlay"

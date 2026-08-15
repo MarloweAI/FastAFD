@@ -104,7 +104,7 @@ review CSV and the AFD run root to the plotter:
 
 ```bash
 python3 experiments/mi355x/plot_pareto.py \
-  --afd-root "/workspace/$USER/FastAFD-MI355X-results/$RUN_LABEL" \
+  --afd-root "/workspace/$USER/FastAFD-results/mi355x/$RUN_LABEL" \
   --vllm-csv "/workspace/$USER/hardware-access/sites/colovore/health-tests/inference/reports/gptoss120b-8k1k.csv" \
   --output-csv results/mi355x/pareto.csv \
   --output-svg results/mi355x/pareto.svg

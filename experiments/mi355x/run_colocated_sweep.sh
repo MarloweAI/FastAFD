@@ -9,7 +9,7 @@ node=${SLURM_NODELIST:-}
 srun_node_args=()
 [[ -z $node ]] || srun_node_args+=(--nodelist="$node")
 run_label=${RUN_LABEL:-$(date -u +%Y%m%dT%H%M%SZ)-colocated}
-result_root=${RESULT_ROOT:-/workspace/$USER/FastAFD-MI355X-results/$run_label/colocated-tp8}
+result_root=${RESULT_ROOT:-/workspace/$USER/FastAFD-results/mi355x/$run_label/colocated-tp8}
 concurrencies=${CONCURRENCIES:-"4 8"}
 isl=${ISL:-8192}
 osl=${OSL:-1024}

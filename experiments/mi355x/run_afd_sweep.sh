@@ -9,13 +9,13 @@ repo=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 inferencex=${INFERENCEX_CHECKOUT:-/workspace/$USER/inferencex-770268c}
 image=${INFERENCEX_IMAGE:-/workspace/images/vllm_vllm-openai-rocm_v0.22.0_c3f18c9b.sqsh}
 hf_cache=${HF_HUB_CACHE_HOST:-/workspace/hf_cache}
-python_overlay=${FASTAFD_PYTHON_OVERLAY:-/workspace/$USER/FastAFD-MI355X-python-v1}
+python_overlay=${FASTAFD_PYTHON_OVERLAY:-/workspace/$USER/FastAFD-mi355x-python-v1}
 partition=${SLURM_PARTITION:-mi355x}
 node=${SLURM_NODELIST:-}
 srun_node_args=()
 [[ -z $node ]] || srun_node_args+=(--nodelist="$node")
 run_label=${RUN_LABEL:-$(date -u +%Y%m%dT%H%M%SZ)}
-result_root=${RESULT_ROOT:-/workspace/$USER/FastAFD-MI355X-results/$run_label}
+result_root=${RESULT_ROOT:-/workspace/$USER/FastAFD-results/mi355x/$run_label}
 concurrencies=${CONCURRENCIES:-"4 8 16 32 64 128"}
 isl=${ISL:-8192}
 osl=${OSL:-1024}

@@ -37,10 +37,10 @@ inferred boundaries.
 |---|---|
 | Canonical, immutable container | `/nfs/containers/sqsh/fastafd-rocm724-v1.sqsh` |
 | Runnable per-node container copy | `/scratch/images/fastafd-rocm724-v1.sqsh` |
-| Active Git checkout | `/scratch/$USER/FastAFD-MI300X` |
+| Active Git checkout | `/scratch/$USER/FastAFD` |
 | Model | `/scratch/models/gpt-oss-120b` |
-| JIT cache | `/scratch/$USER/FastAFD-MI300X/cache` |
-| Results and profiles | `/scratch/$USER/FastAFD-MI300X/results` |
+| JIT cache | `/scratch/$USER/FastAFD/cache` |
+| Results and profiles | `/scratch/$USER/FastAFD/results` |
 
 `/scratch` is node-local and is not backed up. Commit and push source changes.
 Copy only results that need to survive into your NFS home.
@@ -53,7 +53,7 @@ that management checkout on NFS so it is visible from the head and GPU nodes,
 for example:
 
 ```text
-/nfs/home/$USER/FastAFD-MI300X
+/nfs/home/$USER/FastAFD
 ```
 
 The management checkout already points at the MarloweAI repository. Verify the
@@ -61,7 +61,7 @@ remote and your authenticated account before setup; the node-local copies inheri
 this configuration:
 
 ```bash
-cd /nfs/home/$USER/FastAFD-MI300X
+cd /nfs/home/$USER/FastAFD
 git remote -v
 gh auth status
 ```
@@ -71,7 +71,7 @@ Only change `origin` if you intentionally want to work through a separate fork.
 Then run:
 
 ```bash
-cd /nfs/home/$USER/FastAFD-MI300X
+cd /nfs/home/$USER/FastAFD
 ./tools/slurm/setup.sh
 ```
 
@@ -106,7 +106,7 @@ FASTAFD_IMAGE=/scratch/images/fastafd-rocm724-v2.sqsh ./tools/slurm/shell.sh 4
 From the head node, request four GPUs for the default six hours:
 
 ```bash
-cd /nfs/home/$USER/FastAFD-MI300X
+cd /nfs/home/$USER/FastAFD
 FASTAFD_NODE=mi300x-02 ./tools/slurm/shell.sh 4
 ```
 
@@ -152,7 +152,7 @@ srun \
   --time=06:00:00 \
   --job-name=fastafd-dev \
   --container-image=/scratch/images/fastafd-rocm724-v1.sqsh \
-  --container-workdir=/scratch/$USER/FastAFD-MI300X \
+  --container-workdir=/scratch/$USER/FastAFD \
   --pty bash -i
 ```
 
@@ -300,7 +300,7 @@ srun \
   --gpus=4 \
   --time=06:00:00 \
   --container-image=/scratch/images/fastafd-rocm724-v1.sqsh \
-  --container-workdir=/scratch/$USER/FastAFD-MI300X \
+  --container-workdir=/scratch/$USER/FastAFD \
   bash -lc '
     source tools/slurm/env.sh
     export MINISGL_MXFP4_PACKED=1
@@ -316,7 +316,7 @@ srun \
   --gpus=4 \
   --time=06:00:00 \
   --container-image=/scratch/images/fastafd-rocm724-v1.sqsh \
-  --container-workdir=/scratch/$USER/FastAFD-MI300X \
+  --container-workdir=/scratch/$USER/FastAFD \
   bash -lc '
     source tools/slurm/env.sh
     unset MINISGL_MXFP4_PACKED
