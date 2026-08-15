@@ -5,6 +5,12 @@ workers, arbitrary full-node attention:FFN splits, uneven full-world expert
 parallelism, and AITER's packed-MXFP4 CK kernels. It does not preserve MI300X
 behavior when CDNA4 offers a better implementation.
 
+This repository is the architecture-specific MI355X port of
+[`hao-ai-lab/FastAFD`](https://github.com/hao-ai-lab/FastAFD). The independent
+[`MarloweAI/FastAFD-MI300X`](https://github.com/MarloweAI/FastAFD-MI300X)
+repository remains the `gfx942` port and implementation reference; MI355X
+changes are not merged into its supported runtime.
+
 The reproducible Colovore workflow, correctness gates, same-node vLLM baseline,
 42-point AFD sweep, and combined Pareto plot are documented in
 [`experiments/mi355x/README.md`](experiments/mi355x/README.md). The direct launcher

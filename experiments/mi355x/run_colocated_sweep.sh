@@ -14,6 +14,7 @@ concurrencies=${CONCURRENCIES:-"4 8"}
 isl=${ISL:-8192}
 osl=${OSL:-1024}
 prompt_multiplier=${BENCH_NUM_PROMPTS_MULTIPLIER:-10}
+warmup_multiplier=${WARMUP_MULTIPLIER:-2}
 cpus_per_task=${SLURM_CPUS_PER_TASK:-124}
 
 mkdir -p "$result_root"
@@ -25,21 +26,27 @@ srun \
   --container-mounts="$repo:/fastafd,$inferencex:/inferencex,$hf_cache:/mnt/hf_hub_cache,$result_root:/results" \
   --container-mount-home --container-writable --container-workdir=/fastafd \
   --container-remap-root --no-container-entrypoint \
-  --export="ALL,ISL=$isl,OSL=$osl,CONCURRENCIES=$concurrencies,BENCH_NUM_PROMPTS_MULTIPLIER=$prompt_multiplier,PORT=8888,HF_HUB_CACHE=/mnt/hf_hub_cache,HF_HUB_OFFLINE=1,TRANSFORMERS_OFFLINE=1,PYTHONDONTWRITEBYTECODE=1" \
+  --export="ALL,ISL=$isl,OSL=$osl,CONCURRENCIES=$concurrencies,BENCH_NUM_PROMPTS_MULTIPLIER=$prompt_multiplier,WARMUP_MULTIPLIER=$warmup_multiplier,PORT=8888,HF_HUB_CACHE=/mnt/hf_hub_cache,HF_HUB_OFFLINE=1,TRANSFORMERS_OFFLINE=1,PYTHONDONTWRITEBYTECODE=1" \
   bash -lc '
     set -euo pipefail
     model=/mnt/hf_hub_cache/models--openai--gpt-oss-120b/snapshots/b5c939de8f754692c1647ca79fbf85e8c1e70f8a
     cleanup() { if [[ -n ${server_pid:-} ]]; then kill "$server_pid" 2>/dev/null || true; fi; }
     trap cleanup EXIT INT TERM
     export ENV_PREFIX=/usr PYTHON_BIN=/usr/bin/python3 MODEL=$model TP=8 GRAPH_MAX_BS=128
+    export EVAL_ONLY=false
     export MINISGL_MXFP4_PACKED=1
     export EXTRA_ARGS="--max-seq-len-override $((ISL + OSL + 256)) --memory-ratio 0.82"
     /fastafd/run_col_rocm.sh > /results/server.log 2>&1 & server_pid=$!
+    ready=0
     for _ in $(seq 1 900); do
-      curl -fsS "http://127.0.0.1:$PORT/health" >/dev/null 2>&1 && break
+      if curl -fsS "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; then
+        ready=1
+        break
+      fi
       kill -0 "$server_pid" 2>/dev/null || { tail -200 /results/server.log; exit 1; }
       sleep 2
     done
+    (( ready == 1 )) || { echo "server readiness timeout"; tail -200 /results/server.log; exit 1; }
     source /inferencex/benchmarks/benchmark_lib.sh
     for conc in $CONCURRENCIES; do
       dir=/results/c$conc; mkdir -p "$dir"
